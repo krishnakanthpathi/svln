@@ -1,43 +1,18 @@
 const productsDiv = document.getElementById("productsDiv")
 const url = "https://6321f07afd698dfa29032037.mockapi.io/test/all/svln"
 
-loop = 0 ;
-async function Getproducts(id) {
-  const response = await fetch(`https://6321f07afd698dfa29032037.mockapi.io/test/all/svln/${id}`);
-    const data = await response.json()
-  
-    return data
-    
-}
 
 async function fetchProducts() {
   const response = await fetch(`https://6321f07afd698dfa29032037.mockapi.io/test/all/svln`);
     const data = await response.json()
     loop = data.length
 
-    viewAllProducts()
+    viewAllProducts(data)
     
 }
 
 
-async function addProducts(url = "",data = {}) {
-  const response = await fetch(url, {
-    method: 'POST', // *GET, POST, PUT, DELETE, etc.
-    mode: 'cors', // no-cors, *cors, same-origin
-    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: 'same-origin', // include, *same-origin, omit
-    headers: {
-      'Content-Type': 'application/json'
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: 'follow', // manual, *follow, error
-    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: JSON.stringify(data) // body data type must match "Content-Type" header
-  });
-  return response.json(); // parses JSON response into native JavaScript objects
-}
-
-function CreateProductElement(imgUrl,productName,productRate,content) {
+function CreateProductElement(imgUrl,productName,productRate,content,cap) {
   const productU =  `
   <div class="col-sm-6 bg-white p-3 d-flex  align-items-center">
   <div class="row-content">
@@ -46,22 +21,33 @@ function CreateProductElement(imgUrl,productName,productRate,content) {
   <div class="contentS  align-self-stretch  ps-2">
     <p class="h3 border border-warning fs-4 fw-bold text-uppercase p-2 border-2">${productName}</p>
     <p class="rate text-muted"><b>₹</b>${productRate}</p>
-    <p class="  fw-bolder "  style="resize:none ;" disabled> ${content}
+    <p class="border border-2 p-2  fw-bolder "  style="resize:none ;" disabled>
+      
+     ${content}
+    </p>
+
+    <p class="  fw-bolder "  style="resize:none ;" >Capactiy : ${cap}
     </p>
   </div>
 </div>`
  return productU
 }
 
-async function viewAllProducts() {
-  for (let i = 1; i < loop +1 ; i++) {
-    const data =  await Getproducts(i)
-    const ProductElement  = CreateProductElement(data.avatar,data.productname,data.cost,data.content)
 
+async function viewAllProducts(data) {
+
+  data.forEach(data => {
+    
+    const ProductElement  = CreateProductElement(data.avatar,data.productname,data.cost,data.content,data.cap,data.id)
+  
     productsDiv.innerHTML += (ProductElement)
-    console.log("Successfull");
-    // reloadPage() 
-  }
+
+
+  });
+ 
+   document.querySelector('.spinner-border').classList.add("d-none")
+  
+
   
 
 }
@@ -115,13 +101,15 @@ AddProduct.addEventListener("submit", function (e)  {
   const ProductName = document.getElementById("ProductName")
   const Cost = document.getElementById("cost")
   const ProductContent = document.getElementById("ProductContent")
+  const Capacity = document.getElementById("Capacity")
    
   const Product_obj = {
     productname:ProductName.value   ,
     avatar: ProductImgUrl,
     author:"Murali krishna",
     content:ProductContent.value ,
-    cost :Cost.value
+    cost :Cost.value ,
+    cap:Capacity.value
 
   }
 
