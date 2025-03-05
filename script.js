@@ -1,166 +1,111 @@
-const productsDiv = document.getElementById("productsDiv")
-const url = "https://6321f07afd698dfa29032037.mockapi.io/test/all/svln"
-
+const productsDiv = document.getElementById("productsDiv");
+const url = "https://6321f07afd698dfa29032037.mockapi.io/test/all/svln";
 
 async function fetchProducts() {
-  const response = await fetch(`https://6321f07afd698dfa29032037.mockapi.io/test/all/svln`);
-    const data = await response.json()
-    loop = data.length
-
-    viewAllProducts(data)
-    
+    const response = await fetch(url);
+    const data = await response.json();
+    viewAllProducts(data);
 }
 
-
-function CreateProductElement(imgUrl,productName,productRate,content,cap) {
-  const productU =  `
-  <div class="col-sm-6 bg-white p-3 d-flex  align-items-center">
-  <div class="row-content">
-    <img src="${imgUrl}" class="img-fluid  img-thumbnail" height="180" width ="180"  alt="${content}" srcset="">
-  </div>
-  <div class="contentS  align-self-stretch  ps-2">
-    <p class="h3 border border-warning fs-4 fw-bold text-uppercase p-2 border-2">${productName}</p>
-    <p class="rate text-muted"><b>₹</b>${productRate}</p>
-    <p class="border border-2 p-2  fw-bolder "  style="resize:none ;" disabled>
-      
-     ${content}
-    </p>
-
-    <p class="  fw-bolder "  style="resize:none ;" >Capactiy : ${cap}
-    </p>
-  </div>
-</div>`
- return productU
+function createProductElement(imgUrl, productName, productRate, content, cap) {
+  return `
+  <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <div class="card h-100 shadow-sm">
+          <img src="${imgUrl}" class="card-img-top img-fluid" alt="${content}">
+          <div class="card-body d-flex flex-column">
+              <h5 class="card-title text-uppercase text-warning fw-bold">${productName}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">₹${productRate}</h6>
+              <p class="card-text flex-grow-1">${content}</p>
+              <p class="card-text fw-bold">Capacity: ${cap}</p>
+          </div>
+      </div>
+  </div>`;
 }
-
 
 async function viewAllProducts(data) {
-
-  data.forEach(data => {
-    
-    const ProductElement  = CreateProductElement(data.avatar,data.productname,data.cost,data.content,data.cap,data.id)
-  
-    productsDiv.innerHTML += (ProductElement)
-
-
-  });
- 
-   document.querySelector('.spinner-border').classList.add("d-none")
-  
-
-  
-
+    data.forEach(product => {
+        const productElement = createProductElement(product.avatar, product.productname, product.cost, product.content, product.cap);
+        productsDiv.innerHTML += productElement;
+    });
+    document.querySelector('.spinner-border').classList.add("d-none");
 }
 
-document.addEventListener('DOMContentLoaded',fetchProducts)
+document.addEventListener('DOMContentLoaded', fetchProducts);
 
-
-
-// {{{{{{{{{{{{{{{{{{{{{{{{  add Product  }}}}}}}}}}}}}}}}}}}}}}}}
-
-async function postData(url , data = {}) {
-  // Default options are marked with *
-  const response = await fetch(url, {
-    method: 'POST', // *GET, POST, PUT, DELETE, etc.
-    mode: 'cors', // no-cors, *cors, same-origin
-    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: 'same-origin', // include, *same-origin, omit
-    headers: {
-      'Content-Type': 'application/json'
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: 'follow', // manual, *follow, error
-    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: JSON.stringify(data) // body data type must match "Content-Type" header
-  });
-  return response.json(); // parses JSON response into native JavaScript objects
+// Add Product
+async function postData(url, data = {}) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    return response.json();
 }
 
-const upload_file   = document.getElementById("ProductImg")
-var ProductImgUrl = ""
-upload_file.addEventListener("change" , function() {
-  const file = this.files[0]
-        if (file) {
-            const reader = new FileReader();
-            reader.addEventListener('load' ,function(){
+const uploadFile = document.getElementById("ProductImg");
+let productImgUrl = "";
 
-             ProductImgUrl = this.result
-             console.log(this.result);
+uploadFile.addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.addEventListener('load', function() {
+            productImgUrl = this.result;
+        });
+        reader.readAsDataURL(file);
+    }
+});
 
-            });
-        reader.readAsDataURL(file)
-        }
-      })   
+const addProductForm = document.querySelector(".addProduct");
+const closeBtn = document.querySelector(".close_btn");
 
-const AddProduct  = document.querySelector(".addProduct");
-const closeBtn = document.querySelector(".close_btn")
+addProductForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const productName = document.getElementById("ProductName").value;
+    const cost = document.getElementById("cost").value;
+    const productContent = document.getElementById("ProductContent").value;
+    const capacity = document.getElementById("Capacity").value;
 
-AddProduct.addEventListener("submit", function (e)  {
+    const productObj = {
+        productname: productName,
+        avatar: productImgUrl,
+        author: "Murali Krishna",
+        content: productContent,
+        cost: cost,
+        cap: capacity
+    };
 
-  e.preventDefault()
-  const ProductName = document.getElementById("ProductName")
-  const Cost = document.getElementById("cost")
-  const ProductContent = document.getElementById("ProductContent")
-  const Capacity = document.getElementById("Capacity")
-   
-  const Product_obj = {
-    productname:ProductName.value   ,
-    avatar: ProductImgUrl,
-    author:"Murali krishna",
-    content:ProductContent.value ,
-    cost :Cost.value ,
-    cap:Capacity.value
+    postData(url, productObj).then(() => {
+        alert("Product added successfully");
+        closeBtn.click();
+        window.location.reload();
+    });
+});
 
-  }
+// Preview Image
+const previewImg = document.querySelector(".preview_img");
 
+uploadFile.addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.addEventListener('load', function() {
+            previewImg.setAttribute("src", this.result);
+        });
+        reader.readAsDataURL(file);
+    }
+});
 
-  postData(url , Product_obj);
-  console.log(url,Product_obj);
+// Authorizing
+const userName = document.getElementById("user");
+const pass = document.getElementById("pass");
+const formLog = document.getElementById("login_dash");
+const dash = document.getElementById("Dash");
 
-
-  console.log(url,Product_obj);
-
-  closeBtn.click();
-  if (postData) {
-    alert("added successfully")
-    
-  }
-  // window.location.reload();
-
-  
-})
-
-
-// {{{{{{{{{{{{{{{{{{{{{{{{ preview img}}}}}}}}}}}}}}}}}}}}}}}}
-const preview_img = document.querySelector(".preview_img");
-
-    upload_file.addEventListener("change",function () {
-        const file = this.files[0]
-        if (file) {
-            const reader = new FileReader();
-            reader.addEventListener('load' ,function(){
-            preview_img.setAttribute("src",this.result)
-                
-            });
-            reader.readAsDataURL(file)
-        }
-
- });
-
-
-// {{{{{{{{{{{{{{{{{{{{{{{{{{{{ Authorizing... }}}}}}}}}}}}}}}}}}}}}}}}}}}}
-
-
-const userName = document.getElementById("user")
-const pass = document.getElementById("pass")
-const form_log = document.getElementById("login_dash")
-const Dash = document.getElementById("Dash")
-
-
-form_log.addEventListener('click' , () => {
-  
-  if (userName.value == "krishna" && pass.value == "kk") {
-      Dash.click()      
-  }
-  
-})
+formLog.addEventListener('click', () => {
+    if (userName.value === "krishna" && pass.value === "kk") {
+        dash.click();
+    }
+});
